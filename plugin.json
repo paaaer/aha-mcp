@@ -1,0 +1,10 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "aha",
+  "version": "1.1.0",
+  "description": "Read-only Aha! access for Copilot CLI: MCP server for features, epics, requirements and comments, plus a skill for using it.",
+  "author": { "name": "paaaer", "url": "https://github.com/paaaer" },
+  "repository": "https://github.com/paaaer/aha-mcp",
+  "license": "MIT",
+  "keywords": ["aha", "mcp", "roadmap"]
+}
