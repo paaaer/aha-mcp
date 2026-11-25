@@ -62,6 +62,30 @@ copilot
 Environment changes only take effect in a new Copilot process. Never paste the
 token into chat or commit it.
 
+### Make the variables permanent (optional)
+
+To avoid setting them in every shell, store them in your user environment.
+
+PowerShell (Windows):
+
+```powershell
+[Environment]::SetEnvironmentVariable('AHA_BASE_URL', 'https://<company>.aha.io', 'User')
+$secure = Read-Host 'Aha API token' -AsSecureString
+[Environment]::SetEnvironmentVariable('AHA_TOKEN', [System.Net.NetworkCredential]::new('', $secure).Password, 'User')
+Remove-Variable secure
+```
+
+Open a new terminal afterwards; shells that are already open don't see the
+change. Check with `[bool]$env:AHA_TOKEN` (prints `True`).
+
+bash/zsh: add `export AHA_BASE_URL=...` and `export AHA_TOKEN=...` to your
+shell profile, with the file readable only by you.
+
+Trade-off: the token is then stored in plain text in your user environment and
+is readable by every program you run. Prefer the per-shell approach above on
+shared machines. Avoid typing the token directly into a command, because it
+ends up in the shell history.
+
 ## Tools
 
 | Tool                           | Purpose                                                                 |
