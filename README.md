@@ -3,10 +3,13 @@
 Read-only access to [Aha!](https://www.aha.io) from Copilot CLI. The plugin
 bundles:
 
-- a local **MCP server** that reads epics, features, requirements and comments
-  through the Aha! REST API v3, and
-- an **`aha` skill** that tells Copilot which tool to use for which kind of
-  reference (for example `ABC-123` vs. `ABC-E-123`).
+- a local **MCP server** that reads and searches workspaces, releases, epics,
+  features, requirements, ideas, initiatives, goals, documents/notes, tasks and
+  comments through the Aha! REST API v3, and
+- an **`aha` skill** plus automatic ID/URL detection so Copilot knows which
+  record type and endpoint to use whenever you paste an Aha! reference (such as
+  `ABC-123`, `ABC-E-123`, `ABC-R-12`, `ABC-123-1`, or `ABC`) or an `aha.io`
+  link.
 
 The server runs as a local Node.js process over MCP STDIO and opens no port. It
 only performs HTTPS `GET` requests, and Aha! enforces the permissions of the
@@ -90,20 +93,42 @@ ends up in the shell history.
 
 | Tool                           | Purpose                                                                 |
 | ------------------------------ | ----------------------------------------------------------------------- |
-| `get_aha_feature`              | Feature by reference or ID, with description, status and custom fields  |
-| `get_aha_feature_requirements` | Paginated requirements with descriptions and custom fields              |
-| `get_aha_feature_comments`     | First 25 comments (`has_more` indicates there are more in Aha!)         |
-| `get_aha_epic`                 | Epic by reference (e.g. `ABC-E-123`), with description, status and custom fields |
+| `get_aha_record`               | Universal lookup by any Aha! reference (`ABC-123`, `ABC-E-123`, `ABC-R-12`, `ABC`, etc.) or `aha.io` URL — auto-detects the record type |
+| `list_aha_workspaces`          | List or search Aha! workspaces by name or reference prefix              |
+| `get_aha_workspace`            | Workspace details, hierarchy, description and custom fields             |
+| `list_aha_releases`            | List or search releases (optionally scoped to a workspace or parking lot) |
+| `get_aha_release`              | Release details, dates, status, phases, description and custom fields   |
+| `get_aha_release_features`     | Paginated features or epics planned in a release                        |
+| `get_aha_epic`                 | Epic details, dates, status, description and custom fields              |
 | `get_aha_epic_features`        | Paginated features that belong to an epic                               |
-| `search_aha_records`           | Case-insensitive name search in features, requirements or ideas (one type at a time; not full-text; epics are not searchable) |
+| `get_aha_feature`              | Feature details, status, epic/release context, description and custom fields |
+| `get_aha_feature_requirements` | Paginated requirements of a feature with descriptions and custom fields |
+| `get_aha_feature_comments`     | First 25 comments on a feature (`has_more` indicates more in Aha!)      |
+| `search_aha_records`           | Case-insensitive name substring search across features, epics, requirements, ideas, releases, workspaces, initiatives, goals, documents, or tasks (optionally scoped to a workspace) |
+
+### Automatic Aha! ID & URL detection
+
+All record tools accept either a reference number or a full `https://<company>.aha.io/...` URL (including board `?drawer=...` URLs). `get_aha_record` automatically routes based on Aha!'s reference naming conventions:
+
+| Reference format | Record type |
+| ---------------- | ----------- |
+| `ABC` | Workspace (product / line / team) |
+| `ABC-R-123` / `ABC-L-123` | Release / Parking lot |
+| `ABC-RP-123` | Release phase |
+| `ABC-E-123` | Epic |
+| `ABC-123` | Feature / Activity |
+| `ABC-123-1` | Requirement |
+| `ABC-I-123` | Idea |
+| `ABC-S-123` | Initiative |
+| `ABC-G-123` | Goal |
+| `ABC-N-123` | Document / Note |
+| `ABC-TODO-123` / `ABC-T-123` | Task / To-do |
 
 Notes:
 
-- Epic references contain `-E-` and live under `/epics/` in Aha! URLs. Use
-  `get_aha_epic` for those; `get_aha_feature` returns 404 for them.
-- The tools take the reference only, not a full URL.
 - List tools return `pagination.next_cursor` when more results exist; pass it as
   `after` with the same parameters.
+- `search_aha_records` matches record names (substring), not full-text body content.
 - Descriptions may be HTML. Long text fields are truncated and marked, and
   oversized responses are rejected with a hint to reduce `per_page`.
 - Acceptance criteria may be in the description, custom fields or requirements.
@@ -111,11 +136,11 @@ Notes:
 Example prompts:
 
 ```text
-Show Aha epic ABC-E-123 and list its features.
-Summarize feature ABC-123, including requirements and acceptance criteria.
-Compare the requirements of ABC-123 with this repository and distinguish
-implemented, missing and uncertain parts.
-Search Aha features with "account refresh" in the name.
+ABC-E-123 — summarize this epic and list its features.
+What is planned in release ABC-R-12?
+List our Aha workspaces matching "platform" and show upcoming releases.
+Summarize https://<company>.aha.io/features/ABC-123 including requirements and acceptance criteria.
+Compare the requirements of ABC-123 with this repository and distinguish implemented, missing and uncertain parts.
 ```
 
 ## Security and privacy

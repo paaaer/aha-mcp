@@ -2,7 +2,7 @@
   "name": "aha-tools",
   "metadata": {
     "description": "Aha! plugin for Copilot CLI",
-    "version": "1.0.0"
+    "version": "1.2.0"
   },
   "owner": {
     "name": "paaaer"
@@ -11,8 +11,8 @@
     {
       "name": "aha",
       "source": "./",
-      "description": "Read-only Aha! access: MCP server for features, epics, requirements and comments, plus a skill.",
-      "version": "1.1.0"
+      "description": "Read-only Aha! access: MCP server and skill for workspaces, releases, epics, features, requirements, ideas and automatic Aha ID/URL lookup.",
+      "version": "1.2.0"
     }
   ]
 }
